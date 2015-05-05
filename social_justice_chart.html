@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Dsnap - Charts</title>
+	<link href='http://fonts.googleapis.com/css?family=Fira+Sans:300,400|Roboto+Condensed' rel='stylesheet' type='text/css'>
+	<style>
+	#xaxis .domain {
+		fill:none;
+		stroke:#000;
+	}
+	#xaxis text, #yaxis text {
+		font-size: 12px;
+	}
+	.bar {
+		fill: #767676;
+	}
+	.bar-0{
+		fill: #00456e;
+	}
+
+	.bar-1{
+		fill: #94b1ca;
+	}
+	.bar-text {
+		fill:#fff;
+		font-size:16px;
+	}
+
+	body {
+	font-family: Fira Sans, sans-serif;
+    font-weight: 300;
+    letter-spacing: -1px;
+    margin: 0px;
+    padding: 0px;
+	}
+
+	</style>
+</head>
+<body>
+
+	<div id="wrapper">
+	</div>
+
+	<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+	<script>
+		var categories= ['','Social media', 'Volunteering', 'Mailing lists', 'Donating money', 'Other'];
+
+		var percentages = [ 87, 53, 24, 19, 8 ];
+
+		var grid = d3.range(25).map(function(i){
+			return {'x1':0,'y1':0,'x2':0,'y2':480};
+		});
+
+		var tickVals = grid.map(function(d,i){
+			if(i>0){ return i*10; }
+			else if(i===0){ return "100";}
+		});
+
+		var xscale = d3.scale.linear()
+						.domain([0,100])
+						.range([0,700]);
+
+		var yscale = d3.scale.linear()
+						.domain([0,categories.length])
+						.range([0,350]);
+
+		var canvas = d3.select('#wrapper')
+						.append('svg')
+						.attr({'width':900,'height':550});
+
+		var grids = canvas.append('g')
+						  .attr('id','grid')
+						  .attr('transform','translate(150,10)')
+						  .selectAll('line')
+						  .data(grid)
+						  .enter()
+						  .append('line')
+						  .attr({'x1':function(d,i){ return i*30; },
+								 'y1':function(d){ return d.y1; },
+								 'x2':function(d,i){ return i*30; },
+								 'y2':function(d){ return d.y2; },
+							});
+
+		var	xAxis = d3.svg.axis();
+			xAxis
+				.orient('bottom')
+				.scale(xscale)
+				.tickValues(tickVals);
+
+		var	yAxis = d3.svg.axis();
+			yAxis
+				.orient('left')
+				.scale(yscale)
+				.tickSize(0)
+				.tickFormat(function(d,i){ return categories[i]; })
+				.tickValues(d3.range(17));
+
+		var y_xis = canvas.append('g')
+						  .attr("transform", "translate(80,-25)")
+						  .attr('id','yaxis')
+						  .call(yAxis);
+
+		var chart = canvas.append('g')
+							.attr("transform", "translate(80,10)")
+							.attr('id','bars')
+							.selectAll('rect')
+							.data(percentages)
+							.enter()
+							.append('rect')
+							.attr('height',54)
+							.attr({'x':0,'y':function(d,i){ return yscale(i)-2; }})
+							.attr('class', function (d, i){ return 'bar bar-' + i})
+							.attr('width',function(d){ return 0; });
+
+
+		var transit = d3.select("svg").selectAll("rect")
+						    .data(percentages)
+						    .transition()
+						    .duration(1000) 
+						    .attr("width", function(d) {return xscale(d); });
+
+		var transitext = d3.select('#bars')
+							.selectAll('text')
+							.data(percentages)
+							.enter()
+							.append('text')
+							.attr({
+								'x':function(d) {return xscale(d)-30; },
+								'y':function(d,i){ return yscale(i)+32; }
+							})
+							.attr('class', 'bar-text')
+							.text(function(d){ return d + "%"; });
+	</script>
+</body>
+</html>
